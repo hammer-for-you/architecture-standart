@@ -1,0 +1,40 @@
+@startuml
+
+title Передача ставок в кол-центры - диаграмма контейнеров
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+
+Person(client, "Клиент", "Клиент банка 'Стандарт'")
+Person(callCenterEmployee, "Сотрудник кол-центра")
+Person(partnerCallCenterEmployee, "Сотрудник партнёрского кол-центра")
+
+System(callCenterSystem, "Система кол-центра")
+System(bankITSysten, "IT-система банка", "Новые ставки по депозитам формируются внутри системы")
+System_Ext(partnerCallCenterSystem, "Система партнёрского кол-центра")
+
+Container_Boundary(bankITSysten, "IT-система банка") {
+    Container(depositService, "Сервис депозитов", "Java Spring Boot")
+    ContainerDb(depositServiceDb, "БД сервиса депозитов", "MSSQL")
+    Container(messageBroker, "Брокер сообщений", "RabbitMQ")
+    Container(s3Storage, "S3-хранилище")
+}
+
+Container_Boundary(callCenterSystem, "Система кол-центра") {
+    Container(callCenterSystemFrontend, "Фронтенд системы кол-центра", "React.js")
+    Container(callCenterSystemBackend, "Бэкенд системы кол-центра", "Java Spring Boot")
+    ContainerDb(callCenterSystemDb, "БД системы кол-центра", "PostgreSQL")
+}
+
+Rel(client, callCenterEmployee, "Выясняет по телефону значение ставок по депозитам")
+Rel(client, partnerCallCenterEmployee, "Выясняет по телефону значение ставок по депозитам")
+Rel(callCenterEmployee, callCenterSystemFrontend, "Запрос текущих значений ставок")
+Rel(callCenterSystemFrontend, callCenterSystemBackend, "Запрос текущих значений ставок")
+Rel(callCenterSystemBackend, callCenterSystemDb, "Чтение и сохранение значений ставок")
+Rel(messageBroker, callCenterSystemBackend, "Передача новых значений ставок")
+Rel(depositService, messageBroker, "Передача новых значений ставок")
+Rel(depositService, depositServiceDb, "Чтение и сохранение новых значений ставок")
+Rel(depositService, s3Storage, "Сохранение json-файлов с новыми значениями ставок")
+Rel(partnerCallCenterSystem, s3Storage, "Запрос json-файлов с новыми значениями ставок")
+Rel(partnerCallCenterEmployee, partnerCallCenterSystem, "Получение текущих значений ставок")
+
+@enduml

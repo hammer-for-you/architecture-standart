@@ -1,0 +1,22 @@
+@startuml
+
+title Передача ставок в кол-центры - диаграмма контекста
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+
+Person(client, "Клиент", "Клиент банка 'Стандарт'")
+Person(callCenterEmployee, "Сотрудник кол-центра")
+Person(partnerCallCenterEmployee, "Сотрудник партнёрского кол-центра")
+
+System(callCenterSystem, "Система кол-центра")
+System(bankITSysten, "IT-система банка", "Новые ставки по депозитам формируются внутри системы")
+System_Ext(partnerCallCenterSystem, "Система партнёрского кол-центра")
+
+Rel(client, callCenterEmployee, "Выясняет по телефону значение ставок по депозитам")
+Rel(client, partnerCallCenterEmployee, "Выясняет по телефону значение ставок по депозитам")
+Rel(callCenterEmployee, callCenterSystem, "Получение текущих значений ставок")
+Rel(partnerCallCenterEmployee, partnerCallCenterSystem, "Получение текущих значений ставок")
+Rel(bankITSysten, callCenterSystem, "Передача новых значений ставок")
+Rel(partnerCallCenterSystem, bankITSysten, "Запрос новых значений ставок")
+
+@enduml
