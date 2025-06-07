@@ -1,0 +1,48 @@
+@startuml
+
+title Диаграмма контейнеров MVP цифрового открытия депозитов
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+
+Person(client, "Клиент", "Клиент банка 'Стандарт'")
+Person(callCenterManager, "Менеджер кол-центра")
+Person(backOfficeManager, "Менеджер бэк-офиса")
+
+System(bankSite, "Сайт банка 'Стандарт'")
+System(internetBank, "Приложение интернет-банка")
+System(bankITSystem, "IT-система банка 'Стандарт'")
+
+System_Ext(smsGateway, "СМС-шлюз")
+
+Container_Boundary(bankITSystem, "IT-система банка 'Стандарт'") {
+    Container(callCenterSystem, "Система кол-центра")
+    Container(abs, "АБС", "Delphi")
+    ContainerDb(absDb, "БД АБС", "Oracle SQL")
+    Container(depositService, "Сервис депозитов", "Java Spring Boot")
+    ContainerDb(depositServiceDb, "БД сервиса депозитов", "MSSQL")
+    Container(internetBankBackend, "Бэкенд интернет-банка", "C#")
+    Container(messageBrocker, "Брокер сообщений", "RabbitMQ")
+    Container(cache, "Кэши", "Redis")
+}
+
+Rel(client, bankSite, "Использует")
+Rel(client, internetBank, "Использует")
+Rel(bankSite, callCenterSystem, "Сохранение данных клиента для создания заявки на депозит")
+Rel(callCenterManager, callCenterSystem, "Обработка данных клиентов")
+Rel(callCenterManager, client, "Звонок для обсуждения условий депозита")
+Rel(callCenterSystem, depositService, "Создание заявки на открытие депозита")
+Rel(internetBank, internetBankBackend, "Создание заявки на открытие депозита")
+Rel(internetBankBackend, smsGateway, "Отправка СМС с запросом подтверждения заявки на депозит")
+Rel(internetBankBackend, depositService, "Создание заявки на открытие депозита")
+Rel(internetBankBackend, cache, "Запрос данных справочников")
+Rel(smsGateway, client, "Запрос подтверждения заявки на открытие депозита")
+Rel(depositService, depositServiceDb, "Чтение и сохранение данных заявок на открытие депозита")
+Rel(depositService, cache, "Запрос справочников")
+Rel(internetBank, depositService, "Запрос ставок депозитов и статусов заявок")
+Rel(depositService, messageBrocker, "Асинхронная передача данных о заявках на открытие депозита в АБС")
+Rel(messageBrocker, abs, "Передача заявок на открытие депозита")
+Rel(abs, absDb, "Чтение и запись данных заявок, а так же данных депозитов")
+Rel(backOfficeManager, abs, "Подтверждение ставок и открытие депозита")
+Rel(abs, smsGateway, "Отправка СМС с оповещением об открытии депозита")
+Rel(smsGateway, client, "Уведомление об открытии депозита")
+@enduml

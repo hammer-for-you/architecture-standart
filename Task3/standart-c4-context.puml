@@ -1,0 +1,30 @@
+@startuml
+
+title Диаграмма контекста MVP цифрового открытия депозитов
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+
+Person(client, "Клиент", "Клиент банка 'Стандарт'")
+Person(callCenterManager, "Менеджер кол-центра")
+Person(backOfficeManager, "Менеджер бэк-офиса")
+
+System(bankSite, "Сайт банка 'Стандарт'")
+System(internetBank, "Приложение интернет-банка")
+System(bankITSystem, "IT-система банка 'Стандарт'")
+
+System_Ext(smsGateway, "СМС-шлюз")
+
+Rel(client, bankSite, "Использует")
+Rel(client, internetBank, "Использует")
+Rel(bankSite, bankITSystem, "Подача заявки на депозит")
+Rel(internetBank, bankITSystem, "Подача заявки на депозит")
+Rel(bankITSystem, internetBank, "Ставки депозитов")
+Rel(callCenterManager, client, "Звонок для обсуждения условий депозита")
+Rel(callCenterManager, bankITSystem, "Обработка заявок на открытие депозита, поданных через сайт")
+Rel(bankITSystem, smsGateway, "Отправка СМС")
+Rel(smsGateway, client, "Запрос подтверждения заявки на депозит")
+Rel(smsGateway, client, "Уведомление об открытии депозита")
+Rel(backOfficeManager, bankITSystem, "Открытие депозита")
+
+
+@enduml
